@@ -6,7 +6,7 @@ module "vpc" {
   name = "vpc-for-${local.name}"
   cidr = local.vpc_cidr
 
-  azs = local.azs
+  azs             = local.azs
   private_subnets = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
 
   enable_nat_gateway = false
