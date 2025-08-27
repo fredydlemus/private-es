@@ -25,7 +25,11 @@ jobs:
         terraform_version: "1.7.0"
 
     - name: Terraform Init
-      run: terraform init
+      run: |
+        terraform init \
+          -backend-config="bucket=$STATE_BUCKET"
+      env:
+        STATE_BUCKET: ${{vars.STATE_BUCKET}}
 
     - name: Terraform Validate
       run: terraform validate
