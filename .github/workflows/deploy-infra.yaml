@@ -31,6 +31,9 @@ jobs:
       env:
         STATE_BUCKET: ${{vars.STATE_BUCKET}}
 
+    - name: Terraform format check
+      run: terraform fmt --check -recursive
+
     - name: Terraform Validate
       run: terraform validate
 
