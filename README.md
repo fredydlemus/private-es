@@ -1,1 +1,3 @@
 📦 Builing...
+
+in the deploy of the private cluster I have an error because worker nodes doesn't reach public AWS resources

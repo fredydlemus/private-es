@@ -1,13 +1,13 @@
-module "vpc_endpoints_sg"{
-    source  = "terraform-aws-modules/security-group/aws"
-    version = "~> 4.0"
+module "vpc_endpoints_sg" {
+  source  = "terraform-aws-modules/security-group/aws"
+  version = "~> 4.0"
 
-    name        = "${local.name}-vpc-endpoints"
-    description = "Security group for VPC endpoint access"
+  name        = "${local.name}-vpc-endpoints"
+  description = "Security group for VPC endpoint access"
 
-    vpc_id      = module.vpc.vpc_id
+  vpc_id = module.vpc.vpc_id
 
-    ingress_with_cidr_blocks = [
+  ingress_with_cidr_blocks = [
     {
       rule        = "https-443-tcp"
       description = "VPC CIDR HTTPS"
@@ -15,13 +15,13 @@ module "vpc_endpoints_sg"{
     },
   ]
 
-    egress_with_cidr_blocks = [
-        {
-            rule = "https-443-tcp"
-            description = "All egress HTTPS"
-            cidr_blocks = "0.0.0.0/0"
-        },
-    ]
+  egress_with_cidr_blocks = [
+    {
+      rule        = "https-443-tcp"
+      description = "All egress HTTPS"
+      cidr_blocks = "0.0.0.0/0"
+    },
+  ]
 
-    tags = local.tags
+  tags = local.tags
 }
