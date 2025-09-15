@@ -44,6 +44,7 @@ This project creates a fully private EKS cluster with the following components:
 - **VPC Endpoints**: Secure access to AWS services without internet gateway
 - **Auto-scaling**: EKS managed node groups with configurable scaling
 - **Security Groups**: Properly configured network security
+- **Kubectl Access**: Secure kubectl access via AWS SSM Session Manager
 - **Terraform Modules**: Uses official AWS Terraform modules for best practices
 
 ## 📋 Prerequisites
@@ -114,18 +115,93 @@ terraform plan
 terraform apply
 ```
 
+## 🔐 Accessing Your Private EKS Cluster
+
+Since this is a private EKS cluster with no public endpoint access, you'll need to use AWS SSM Session Manager to access kubectl. The infrastructure includes a dedicated EC2 instance configured for kubectl access.
+
+### Prerequisites for kubectl Access
+
+1. **AWS CLI configured** with appropriate permissions
+2. **AWS SSM Session Manager plugin** installed:
+   ```bash
+   # macOS
+   curl "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/mac/sessionmanager-bundle.zip" -o "sessionmanager-bundle.zip"
+   unzip sessionmanager-bundle.zip
+   sudo ./sessionmanager-bundle/install -i /usr/local/sessionmanagerplugin -b /usr/local/bin/session-manager-plugin
+   
+   # Linux
+   curl "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/linux_64bit/session-manager-plugin.rpm" -o "session-manager-plugin.rpm"
+   sudo yum install -y session-manager-plugin.rpm
+   
+   # Windows
+   # Download and install from: https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html
+   ```
+
+### Connecting to kubectl
+
+After deployment, use the output command to connect:
+
+```bash
+# Get the connection command from Terraform outputs
+terraform output kubectl_access_ssm_command
+
+# Or connect directly (replace with your instance ID)
+aws ssm start-session --target i-1234567890abcdef0 --region us-east-1
+```
+
+### Using kubectl
+
+Once connected to the EC2 instance:
+
+```bash
+# View the helper script
+./kubectl-helper.sh
+
+# Test cluster connection
+kubectl cluster-info
+
+# List nodes
+kubectl get nodes
+
+# List all pods
+kubectl get pods -A
+
+# View cluster details
+aws eks describe-cluster --name private-eks --region us-east-1
+```
+
+### What's Pre-installed
+
+The kubectl access instance comes with:
+- **AWS CLI v2**: Latest version for AWS service interaction
+- **kubectl**: Kubernetes command-line tool
+- **eksctl**: EKS command-line tool
+- **Pre-configured kubeconfig**: Ready to use with your cluster
+
+### Security Notes
+
+- The EC2 instance is in a private subnet with no public IP
+- Access is only possible through AWS SSM Session Manager
+- The instance has minimal IAM permissions (only EKS read access)
+- All network traffic goes through VPC endpoints
+
 ## 📁 Project Structure
 
 ```
 eks-demo/
-├── 01-vpc.tf              # VPC configuration
-├── 02-vpc-endpoints-sg.tf # Security groups for VPC endpoints
-├── 03-vpc-endpoints.tf    # VPC endpoints configuration
-├── 04-eks.tf              # EKS cluster and node groups
-├── backend.tf             # Terraform backend configuration
-├── locals.tf              # Local variables and tags
-├── versions.tf            # Terraform and provider versions
-└── README.md              # This documentation
+├── 01-vpc.tf                    # VPC configuration
+├── 02-vpc-endpoints-sg.tf       # Security groups for VPC endpoints
+├── 03-vpc-endpoints.tf          # VPC endpoints configuration
+├── 04-eks.tf                    # EKS cluster and node groups
+├── 05-iam-kubectl-access.tf     # IAM roles and policies for kubectl access
+├── 06-kubectl-access-sg.tf      # Security group for kubectl access instance
+├── 07-kubectl-access-instance.tf # EC2 instance for kubectl access
+├── 08-outputs.tf                # Terraform outputs
+├── user_data.sh                 # User data script for kubectl setup
+├── backend.tf                   # Terraform backend configuration
+├── locals.tf                    # Local variables and tags
+├── versions.tf                  # Terraform and provider versions
+└── README.md                    # This documentation
 ```
 
 ## 🔧 Configuration Details
