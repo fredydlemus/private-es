@@ -15,7 +15,7 @@ output "kubectl_access_ssm_command" {
 
 output "kubectl_access_instructions" {
   description = "Instructions for accessing kubectl"
-  value = <<-EOT
+  value       = <<-EOT
     To access your private EKS cluster via kubectl:
     
     1. Start an SSM session:
@@ -39,9 +39,9 @@ output "kubectl_access_instructions" {
 output "eks_cluster_info" {
   description = "EKS cluster information"
   value = {
-    cluster_name = module.eks.cluster_name
-    cluster_arn  = module.eks.cluster_arn
-    cluster_endpoint = module.eks.cluster_endpoint
+    cluster_name              = module.eks.cluster_name
+    cluster_arn               = module.eks.cluster_arn
+    cluster_endpoint          = module.eks.cluster_endpoint
     cluster_security_group_id = module.eks.cluster_security_group_id
   }
 }
