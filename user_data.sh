@@ -1,9 +1,8 @@
 #!/bin/bash
 
-# Install kubectl
-curl -o kubectl https://s3.us-east-1.amazonaws.com/amazon-eks/1.31.0/2024-05-08/bin/linux/amd64/kubectl
-chmod +x ./kubectl
-mv ./kubectl /usr/local/bin
+# Install kubectl from s3 mirror
+aws s3 cp s3://${bucket}/${prefix}/kubectl /usr/local/bin/kubectl
+chmod +x /usr/local/bin/kubectl
 
 # Configure AWS CLI region
 aws configure set region ${region}

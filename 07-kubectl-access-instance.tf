@@ -18,6 +18,8 @@ locals {
   user_data = base64encode(templatefile("${path.module}/user_data.sh", {
     cluster_name = local.name
     region       = local.region
+    bucket       = var.s3_mirror_bucket
+    prefix       = var.s3_mirror_prefix
   }))
 }
 
