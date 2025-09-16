@@ -44,13 +44,6 @@ resource "aws_iam_policy" "kubectl_access_eks_policy" {
           "eks:DescribeCluster"
         ]
         Resource = module.eks.cluster_arn
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "s3:GetObject"
-        ],
-        Resource = "arn:aws:s3:::${var.artifact_bucket}/${var.artifact_prefix}/*"
       }
     ]
   })

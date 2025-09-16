@@ -16,10 +16,8 @@ data "aws_ami" "amazon_linux" {
 
 locals {
   user_data = base64encode(templatefile("${path.module}/user_data.sh", {
-    cluster_name    = local.name
-    region          = local.region
-    artifact_bucket = var.artifact_bucket
-    artifact_prefix = var.artifact_prefix
+    cluster_name = local.name
+    region       = local.region
   }))
 }
 
