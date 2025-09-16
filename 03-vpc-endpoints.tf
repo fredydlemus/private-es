@@ -17,7 +17,7 @@ module "vpc_endpoints" {
     }
     },
     {
-      for service in toset(["autoscaling", "ecr.api", "ecr.dkr", "ec2", "ec2messages", "elasticloadbalancing", "sts", "kms", "logs", "ssm", "ssmmessages"]) :
+      for service in toset(["autoscaling", "ecr.api", "ecr.dkr", "ec2", "ec2messages", "elasticloadbalancing", "sts", "kms", "logs", "ssm", "ssmmessages", "eks"]) :
       replace(service, ".", "-") => {
         service             = service
         subnet_ids          = module.vpc.private_subnets
