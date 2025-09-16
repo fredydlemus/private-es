@@ -1,22 +1,21 @@
 #!/bin/bash
 
-# Update system
-yum update -y
-
 # Install AWS CLI v2
-curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+aws s3 cp "s3://${artifact_bucket}/${artifact_prefix}/awscliv2/awscli-exe-linux-x86_64.zip" awscliv2.zip
 unzip awscliv2.zip
 ./aws/install
 rm -rf aws awscliv2.zip
 
 # Install kubectl
-curl -o kubectl https://s3.us-west-2.amazonaws.com/amazon-eks/1.31.0/2024-05-08/bin/linux/amd64/kubectl
+curl -o kubectl https://s3.us-east-1.amazonaws.com/amazon-eks/1.31.0/2024-05-08/bin/linux/amd64/kubectl
 chmod +x ./kubectl
 mv ./kubectl /usr/local/bin
 
 # Install eksctl
-curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+aws s3 cp "s3://${artifact_bucket}/${artifact_prefix}/eksctl/eksctl_Linux_amd64.tar.gz" /tmp/eksctl.tar.gz
+tar -xzf /tmp/eksctl.tar.gz -C /tmp
 mv /tmp/eksctl /usr/local/bin
+rm -rf /tmp/eksctl.tar.gz
 
 # Configure AWS CLI region
 aws configure set region ${region}
