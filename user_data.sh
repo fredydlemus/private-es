@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# Install AWS CLI v2 from s3 mirror
+aws s3 cp s3://${bucket}/${prefix}/awscliv2.zip /tmp/awscliv2.zip
+unzip /tmp/awscliv2.zip -d /tmp/awscliv2
+mv /tmp/awscliv2/aws /usr/local/bin/aws
+chmod +x /usr/local/bin/aws
+
 # Install kubectl from s3 mirror
 aws s3 cp s3://${bucket}/${prefix}/kubectl /usr/local/bin/kubectl
 chmod +x /usr/local/bin/kubectl
