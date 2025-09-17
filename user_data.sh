@@ -1,15 +1,17 @@
 #!/bin/bash
 
-# Install AWS CLI v2 from s3 mirror
+#Download AWS CLI v2 and kubectl from s3 mirror
 aws s3 cp s3://${bucket}/${prefix}/awscliv2.zip /tmp/awscliv2.zip
+aws s3 cp s3://${bucket}/${prefix}/kubectl /usr/local/bin/kubectl
 
+# Remove AWS CLI v1
 sudo yum remove awscli -y
 
+# Install AWS CLI v2
 unzip /tmp/awscliv2.zip -d /tmp/awscliv2
 /tmp/awscliv2/aws/install
 
-# Install kubectl from s3 mirror
-aws s3 cp s3://${bucket}/${prefix}/kubectl /usr/local/bin/kubectl
+# Configure kubectl
 chmod +x /usr/local/bin/kubectl
 
 # Configure AWS CLI region
