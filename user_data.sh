@@ -18,7 +18,12 @@ chmod +x /usr/local/bin/kubectl
 aws configure set region ${region}
 
 # Update kubeconfig for the EKS cluster
-aws eks update-kubeconfig --region ${region} --name ${cluster_name}
+mkdir -p /home/ec2-user/.kube
+aws eks update-kubeconfig \
+  --region "${region}" \
+  --name "${cluster_name}" \
+  --kubeconfig /home/ec2-user/.kube/config
+chown -R ec2-user:ec2-user /home/ec2-user/.kube
 
 # Create a simple script for easy kubectl access
 cat > /home/ec2-user/kubectl-helper.sh << 'EOF'
