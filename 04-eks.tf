@@ -30,5 +30,16 @@ module "eks" {
     }
   }
 
+  cluster_security_group_additional_rules = {
+    ingress_bastion_https = {
+      description = "Allow bastion to access EKS cluster"
+      protocol    = "tcp"
+      from_port   = 443
+      to_port     = 443
+      type        = "ingress"
+      source_security_group_id = module.kubectl_access_sg.security_group_id
+    }
+  }
+
   tags = local.tags
 }
