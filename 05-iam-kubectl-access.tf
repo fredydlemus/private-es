@@ -70,6 +70,12 @@ resource "aws_iam_instance_profile" "kubectl_access_profile" {
   tags = local.tags
 }
 
+resource "aws_eks_access_entry" "kubectl_access" {
+  cluster_name  = module.eks.cluster_name
+  principal_arn = aws_iam_role.kubectl_access_role.arn
+  type          = "STANDARD"
+}
+
 resource "aws_eks_access_policy_association" "kubectl_access" {
   cluster_name  = module.eks.cluster_name
   principal_arn = aws_iam_role.kubectl_access_role.arn
@@ -80,4 +86,6 @@ resource "aws_eks_access_policy_association" "kubectl_access" {
     type       = "cluster"
     namespaces = []
   }
+
+  depends_on = [aws_eks_access_entry.kubectl_access]
 }
