@@ -69,3 +69,15 @@ resource "aws_iam_instance_profile" "kubectl_access_profile" {
 
   tags = local.tags
 }
+
+resource "aws_eks_access_policy_association" "kubectl_access" {
+  cluster_name  = module.eks.cluster_name
+  principal_arn = aws_iam_role.kubectl_access_role.arn
+
+  policy_arn = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+
+  access_scope {
+    type       = "cluster"
+    namespaces = []
+  }
+}
