@@ -1,33 +1,6 @@
-# Private EKS Cluster Demo
+# EKS Cluster Configuration
 
-A Terraform-based infrastructure project that provisions a private Amazon EKS (Elastic Kubernetes Service) cluster with VPC endpoints for secure, isolated container orchestration.
-
-## 📚 Documentation
-
-This project is split into two main documentation files:
-
-### 🏗️ [EKS Cluster Configuration](README-EKS-CLUSTER.md)
-Complete guide for infrastructure setup, deployment, and configuration:
-- Architecture overview and components
-- Prerequisites and setup requirements
-- Terraform configuration and deployment steps
-- VPC, EKS, and VPC endpoints configuration
-- Security features and customization options
-- Cost considerations and cleanup procedures
-
-### 🔐 [Cluster Access Guide](README-CLUSTER-ACCESS.md)
-Comprehensive guide for accessing and managing your private EKS cluster:
-- AWS SSM Session Manager setup
-- kubectl installation and configuration
-- Secure cluster access procedures
-- Common operations and troubleshooting
-- Security features and best practices
-- Monitoring and maintenance tasks
-
-## 🚀 Quick Start
-
-1. **Deploy the infrastructure** - Follow the [EKS Cluster Configuration](README-EKS-CLUSTER.md) guide
-2. **Access your cluster** - Use the [Cluster Access Guide](README-CLUSTER-ACCESS.md) to connect via kubectl
+This document covers the infrastructure configuration and deployment of a private Amazon EKS (Elastic Kubernetes Service) cluster.
 
 ## 🏗️ Architecture Overview
 
@@ -64,15 +37,82 @@ This project creates a fully private EKS cluster with the following components:
 └─────────────────────────────────────────────────────────────┘
 ```
 
-## 🚀 Key Features
+## 🚀 Features
 
 - **Private EKS Cluster**: No public endpoint access for enhanced security
 - **Multi-AZ Deployment**: High availability across 3 availability zones
 - **VPC Endpoints**: Secure access to AWS services without internet gateway
 - **Auto-scaling**: EKS managed node groups with configurable scaling
 - **Security Groups**: Properly configured network security
-- **Kubectl Access**: Secure kubectl access via AWS SSM Session Manager
 - **Terraform Modules**: Uses official AWS Terraform modules for best practices
+
+## 📋 Prerequisites
+
+Before deploying this infrastructure, ensure you have:
+
+- [Terraform](https://www.terraform.io/downloads.html) >= 1.3
+- [AWS CLI](https://aws.amazon.com/cli/) configured with appropriate credentials
+- AWS account with permissions to create:
+  - VPC and networking resources
+  - EKS clusters and node groups
+  - IAM roles and policies
+  - VPC endpoints
+- S3 bucket for Terraform state storage (configure in `backend.tf`)
+
+## 🛠️ Configuration
+
+### Local Variables
+
+The project uses the following default configuration in `locals.tf`:
+
+```hcl
+locals {
+  region = "us-east-1"
+  name = "private-eks"
+  vpc_cidr = "10.0.0.0/16"
+  azs = ["us-east-1a", "us-east-1b", "us-east-1c"]
+  
+  tags = {
+    Environment = "dev"
+    Project = "private-eks-demo"
+    Terraform = true
+  }
+}
+```
+
+### Backend Configuration
+
+Update `backend.tf` with your S3 bucket details:
+
+```hcl
+terraform {
+  backend "s3" {
+    bucket = "your-terraform-state-bucket"
+    key    = "terraform.tfstate"
+    region = "us-east-1"
+  }
+}
+```
+
+## 🚀 Deployment
+
+### Step 1: Initialize Terraform
+
+```bash
+terraform init
+```
+
+### Step 2: Review the Plan
+
+```bash
+terraform plan
+```
+
+### Step 3: Deploy Infrastructure
+
+```bash
+terraform apply
+```
 
 ## 📁 Project Structure
 
@@ -90,10 +130,39 @@ eks-demo/
 ├── backend.tf                   # Terraform backend configuration
 ├── locals.tf                    # Local variables and tags
 ├── versions.tf                  # Terraform and provider versions
-├── README.md                    # This overview documentation
-├── README-EKS-CLUSTER.md        # EKS cluster configuration guide
-└── README-CLUSTER-ACCESS.md     # Cluster access guide
+└── README.md                    # Main documentation
 ```
+
+## 🔧 Configuration Details
+
+### VPC Configuration (`01-vpc.tf`)
+
+- **CIDR**: 10.0.0.0/16
+- **Subnets**: 3 private subnets across different AZs
+- **NAT Gateway**: Disabled (private cluster)
+- **Tags**: Properly tagged for Kubernetes integration
+
+### VPC Endpoints (`03-vpc-endpoints.tf`)
+
+**Gateway Endpoints:**
+- S3 (for container images and logs)
+
+**Interface Endpoints:**
+- ECR API and DKR (container registry)
+- EKS (Kubernetes API)
+- EC2 and EC2 Messages
+- Elastic Load Balancing
+- STS (security token service)
+- KMS (key management)
+- CloudWatch Logs
+- SSM and SSM Messages
+
+### EKS Configuration (`04-eks.tf`)
+
+- **Kubernetes Version**: 1.31
+- **Node Groups**: t3.medium instances
+- **Scaling**: 1-5 nodes (desired: 3)
+- **Add-ons**: CoreDNS, kube-proxy, VPC CNI
 
 ## 🔒 Security Features
 
@@ -103,15 +172,59 @@ eks-demo/
 - **Security Groups**: Restrictive ingress/egress rules
 - **IAM Integration**: Proper role-based access control
 
+## 🗑️ Cleanup
+
+To destroy all resources:
+
+```bash
+terraform destroy
+```
+
+**⚠️ Warning**: This will permanently delete all resources. Make sure to backup any important data.
+
 ## 📊 Cost Considerations
 
 This setup includes:
 - EKS cluster (fixed cost)
 - EC2 instances (t3.medium)
 - VPC endpoints (per endpoint)
+- NAT Gateway (if enabled)
 - Data transfer costs
 
 Estimated monthly cost: ~$100-200 (depending on usage)
+
+## 🔧 Customization
+
+### Scaling Configuration
+
+Modify node group settings in `04-eks.tf`:
+
+```hcl
+eks_managed_node_groups = {
+  workers = {
+    instance_types = ["t3.large"]  # Change instance type
+    min_size     = 2               # Minimum nodes
+    max_size     = 10              # Maximum nodes
+    desired_size = 5               # Desired nodes
+  }
+}
+```
+
+### Adding VPC Endpoints
+
+Add more endpoints in `03-vpc-endpoints.tf`:
+
+```hcl
+endpoints = merge({
+  # ... existing endpoints ...
+  new-service = {
+    service             = "new-service"
+    subnet_ids          = module.vpc.private_subnets
+    private_dns_enabled = true
+    tags                = { Name = "${local.name}-new-service" }
+  }
+})
+```
 
 ## 📚 Additional Resources
 
